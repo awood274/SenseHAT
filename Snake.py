@@ -4,18 +4,21 @@ import random
 SnakeColor = (255, 255, 255)
 FoodColor = (255, 0, 0)
 Blank = (0, 0, 0)
-snake = [(2,4), (3,4), (4,4)]
+snake = [(0,4), (1,4), (2,4)]
 food = [random.randint(0,7), random.randint(0,7)]
 Direction = "right"
 sense = SenseHat()
 LastEaten = time.time()
-Wait = 0.25
+Wait = 0.35
 Cooldown = 5.0
 Score = 0
 
 def draw_snake():
     for segment in snake:
         sense.set_pixel(segment[0], segment[1], SnakeColor)
+def GameOver():
+    sense.show_message("Game Over!! Score: %s" % Score)
+    snake = []
 def move():
     global LastEaten
     global Wait
@@ -29,22 +32,26 @@ def move():
     next = list(lastSegment)
     if (Direction == "right"):
         if (lastSegment[0] == 7):
-            next[0] = 0
+            GameOver()
+            return False
         else:
             next[0] = lastSegment[0] + 1
     if (Direction == "left"):
         if (lastSegment[0] == 0):
-            next[0] = 7
+            GameOver()
+            return False
         else:
             next[0] = lastSegment[0] - 1
     if (Direction == "up"):
         if (lastSegment[1] == 0):
-            next[1] = 7
+            GameOver()
+            return False
         else:
             next[1] = lastSegment[1] - 1
     if (Direction == "down"):
         if (lastSegment[1] == 7):
-            next[1] = 0
+            GameOver()
+            return False
         else:
             next[1] = lastSegment[1] + 1
 
@@ -60,8 +67,7 @@ def move():
         Cooldown -= 0.05
         Score += 1
     elif (next in snake or (len(snake) == 1 and time.time() - LastEaten >= Cooldown)):
-        sense.show_message("Game Over!! Score: %s" % Score)
-        snake = []
+        GameOver()
         return False
             
     snake.append(next)
@@ -73,7 +79,7 @@ def move():
     return True
 def joystick_moved(event):
     global Direction
-    if ((Direction == "left" and event.direction == "right") or (Direction == "right" and event.direction == "left") or (Direction == "up" and event.direction == "down") or (Direction == "down" and event.direction == "up")):
+    if (Direction == "middle" or (Direction == "left" and event.direction == "right") or (Direction == "right" and event.direction == "left") or (Direction == "up" and event.direction == "down") or (Direction == "down" and event.direction == "up")):
         return 0
     Direction = event.direction
 def draw_food():
@@ -91,3 +97,4 @@ while (True):
     draw_snake()
     draw_food()
     time.sleep(Wait)
+
