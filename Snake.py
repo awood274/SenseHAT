@@ -9,7 +9,7 @@ food = [random.randint(0,7), random.randint(0,7)]
 Direction = "right"
 sense = SenseHat()
 LastEaten = time.time()
-Wait = 0.35
+Wait = 0.4
 Cooldown = 5.0
 Score = 0
 
@@ -63,8 +63,8 @@ def move():
             first = False
         remove = False
         LastEaten = time.time()
-        Wait -= 0.01
-        Cooldown -= 0.05
+        Wait -= 0.005
+        Cooldown -= 0.1
         Score += 1
     elif (next in snake or (len(snake) == 1 and time.time() - LastEaten >= Cooldown)):
         GameOver()
@@ -79,22 +79,27 @@ def move():
     return True
 def joystick_moved(event):
     global Direction
-    if (Direction == "middle" or (Direction == "left" and event.direction == "right") or (Direction == "right" and event.direction == "left") or (Direction == "up" and event.direction == "down") or (Direction == "down" and event.direction == "up")):
+    if (event.direction == "middle" or (Direction == "left" and event.direction == "right") or (Direction == "right" and event.direction == "left") or (Direction == "up" and event.direction == "down") or (Direction == "down" and event.direction == "up")):
         return 0
     Direction = event.direction
 def draw_food():
         if (food[0] >= 0 and food[1]  >= 0):
             sense.set_pixel(food[0], food[1], FoodColor)
-
+def check_time():
+    global LastEaten
+    global Cooldown
+    global Score
+    if (time.time() - LastEaten >= Cooldown):
+        LastEaten = time.time()
+        snake.remove(snake[-1])
+        Score -= 1
+        
 sense.stick.direction_any = joystick_moved
 while (True):
     sense.clear()
     if (move() == False):
         break;
-    if (time.time() - LastEaten >= Cooldown):
-        LastEaten = time.time()
-        snake.remove(snake[-1])
+    check_time()
     draw_snake()
     draw_food()
     time.sleep(Wait)
-
